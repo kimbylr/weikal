@@ -41,8 +41,8 @@ export const createObj = async (startDate: string, title: string) => {
     filename,
   });
 
-  const base64auth = binaryToBase64(`${USER}:${PASSWORD}`);
-  const res = await fetch(`${CALDAV_URL}/calendars/${USER}/default/${filename}`, {
+  const base64auth = binaryToBase64(`${USERNAME}:${PASSWORD}`);
+  const res = await fetch(`${CALDAV_URL}/calendars/${USERNAME}/default/${filename}`, {
     headers: { Authorization: `Basic ${base64auth}` },
   });
 
