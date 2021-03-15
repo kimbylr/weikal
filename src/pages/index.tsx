@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import dayjs from 'dayjs';
 import ical from 'ical';
 import React from 'react';
@@ -15,6 +16,9 @@ const App = ({ events }: Props) => {
 
   return (
     <div>
+      <Head>
+        <title>Weidling</title>
+      </Head>
       <header>
         <h1>{process.env.NEXT_PUBLIC_HEADING}</h1>
         <div className="subtitle">{process.env.NEXT_PUBLIC_SUBTITLE}</div>
