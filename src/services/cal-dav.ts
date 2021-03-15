@@ -1,7 +1,6 @@
 import { Credentials, Client, transport } from 'dav';
 import dayjs, { Dayjs } from 'dayjs';
 import binaryToBase64 from 'btoa';
-require('xmlhttprequest'); // needed for dav
 
 const CALDAV_URL = process.env.CALDAV_URL;
 const CALENDAR_NAME = process.env.CALENDAR_NAME;

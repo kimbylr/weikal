@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import ical from 'ical';
 import React from 'react';
+import xhr from 'xmlhttprequest';
 
 import { Calendar } from '../compositions/calendar';
 import { Login } from '../compositions/login';
@@ -32,6 +33,7 @@ const App = ({ events }: Props) => {
 };
 
 export const getServerSideProps = async () => {
+  global.XMLHttpRequest = xhr.XMLHttpRequest;
   const calendar = await getCalendar();
   const events: Event[] = calendar.objects
     .map(({ calendarData }) => {
