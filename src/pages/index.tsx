@@ -25,7 +25,7 @@ const App = ({ events }: Props) => {
       </header>
       <main className={passphrase ? 'logged-in' : 'logged-out'}>
         {passphrase ? (
-          <Calendar events={events} />
+          <Calendar events={events} passphrase={passphrase} />
         ) : (
           <Login setPassphrase={setPassphrase} />
         )}

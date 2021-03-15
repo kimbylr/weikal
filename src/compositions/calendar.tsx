@@ -10,11 +10,11 @@ import { useLocalStorage } from '../hooks/use-local-storage';
 
 type Props = {
   events: Event[];
+  passphrase: string;
 };
-export const Calendar = (props: Props) => {
-  const [events, setEvents] = useState<Event[]>(props.events);
+export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
+  const [events, setEvents] = useState<Event[]>(initialEvents);
   const [loading, setLoading] = useState(false);
-  const [passphrase] = useLocalStorage({ key: 'passphrase' });
 
   const createEvent = async (dateStr: string) => {
     const date = dayjs(dateStr);
