@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 type Props = {
   setPassphrase: (value: string) => void;
@@ -6,6 +6,11 @@ type Props = {
 export const Login = ({ setPassphrase }: Props) => {
   const [input, setInput] = useState('');
   const [nope, setNope] = useState(false);
+  const ref = useRef<HTMLInputElement | null>();
+
+  useEffect(() => {
+    ref.current && ref.current.focus();
+  }, []);
 
   return (
     <form
@@ -31,6 +36,7 @@ export const Login = ({ setPassphrase }: Props) => {
       <p>Wirf dein Wurfänkerchen!</p>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <input
+          ref={ref}
           type="password"
           value={input}
           onChange={(e) => setInput(e.currentTarget.value)}
