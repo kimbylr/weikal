@@ -33,7 +33,7 @@ const App = ({ events }: Props) => {
 
 export const getServerSideProps = async () => {
   const calendar = await getCalendar();
-  const events = calendar.objects
+  const events: Event[] = calendar.objects
     .map(({ calendarData }) => {
       const eventObj = ical.parseICS(calendarData);
       const id = Object.keys(eventObj)[0];

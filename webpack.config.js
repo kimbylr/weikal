@@ -1,7 +1,7 @@
 module.exports = {
   externals: [
     {
-      xmlhttprequest: '{XMLHttpRequest:XMLHttpRequest}',
+      child_process: '{child_process:{spawn: () =>{}}}',
     },
   ],
 };
