@@ -6,7 +6,9 @@ import dayjs from 'dayjs';
 import { WEEKDAYS } from '../helpers/weekdays';
 import { Event } from '../types/global';
 import { Spinner } from '../elements/spinner';
-import { useLocalStorage } from '../hooks/use-local-storage';
+
+const FAILED_ALERT =
+  'Das hat leider nicht funktioniert :( Profitipp: Einfach nochmal versuchen.';
 
 type Props = {
   events: Event[];
@@ -44,7 +46,7 @@ export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
         },
       ]);
     } catch {
-      alert('Sorry, hat nicht funktioniert. Seite neu laden und nochmals probieren!');
+      alert(FAILED_ALERT);
     } finally {
       setLoading(false);
     }
@@ -92,7 +94,7 @@ export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
         setEvents((events) => events.filter((event) => event.id !== id));
       }
     } catch {
-      alert('Sorry, hat nicht funktioniert. Seite neu laden und nochmals probieren!');
+      alert(FAILED_ALERT);
     } finally {
       setLoading(false);
     }
