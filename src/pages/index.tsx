@@ -1,12 +1,10 @@
 import dayjs from 'dayjs';
 import ical from 'ical';
 import React from 'react';
-import xhr from 'xmlhttprequest';
-
 import { Calendar } from '../compositions/calendar';
 import { Login } from '../compositions/login';
 import { useLocalStorage } from '../hooks/use-local-storage';
-import { getCalendar } from '../services/cal-dav';
+import { getAllEvents } from '../services/cal-dav';
 import { Event } from '../types/global';
 
 type Props = {
@@ -33,10 +31,8 @@ const App = ({ events }: Props) => {
 };
 
 export const getServerSideProps = async () => {
-  global.XMLHttpRequest = xhr.XMLHttpRequest;
-  const calendar = await getCalendar();
-  const events: Event[] = calendar.objects
-    .map(({ calendarData }) => {
+  const events: Event[] = (await getAllEvents())
+    .map(({ calendarData, filename }) => {
       const eventObj = ical.parseICS(calendarData);
       const id = Object.keys(eventObj)[0];
 
@@ -49,6 +45,7 @@ export const getServerSideProps = async () => {
         date: dayjs(start).add(12, 'hours').format(`YYYY-MM-DD`),
         end: dayjs(end).add(12, 'hours').format(`YYYY-MM-DD`),
         title: summary,
+        filename,
         id,
       };
     })

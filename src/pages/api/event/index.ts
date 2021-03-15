@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createObj } from '../../../services/cal-dav';
+import { createEvent } from '../../../services/cal-dav';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.headers.passphrase !== process.env.PASSPHRASE) {
@@ -11,8 +11,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST' && startDate && title) {
     console.log('create event:', startDate, title);
     try {
-      const id = await createObj(startDate, title);
-      return res.status(200).json({ id });
+      const { id, filename } = await createEvent(startDate, title);
+      return res.status(200).json({ id, filename });
     } catch (e) {
       return res.status(500).send(e);
     }

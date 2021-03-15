@@ -17,21 +17,20 @@
     "@fullcalendar/react": "^5.5.0",
     "babel-plugin-transform-require-ignore": "^0.1.1",
     "btoa": "^1.2.1",
-    "dav": "^1.8.0",
     "dayjs": "^1.10.4",
     "ical": "^0.8.0",
     "next": "10.0.8",
     "next-transpile-modules": "^6.3.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
-    "xmlhttprequest": "^1.8.0"
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@types/btoa": "^1.2.3",
-    "@types/dav": "^1.7.1",
     "@types/ical": "^0.6.2",
     "@types/node": "^14.14.34",
     "@types/react": "^17.0.3",
+    "@types/xml2js": "^0.4.8",
     "typescript": "^4.2.3"
   }
 }

@@ -1,57 +1,21 @@
-import { Credentials, Client, transport } from 'dav';
 import dayjs, { Dayjs } from 'dayjs';
 import binaryToBase64 from 'btoa';
+import { parseXml } from '../helpers/parse-xml';
 
-const CALDAV_URL = process.env.CALDAV_URL;
-const CALENDAR_NAME = process.env.CALENDAR_NAME;
+const CALDAV_SERVER = process.env.CALDAV_SERVER;
+const CALDAV_PATH = process.env.CALDAV_PATH;
+const CALENDAR_KEY = process.env.CALENDAR_KEY;
 const USERNAME = process.env.USERNAME;
 const PASSWORD = process.env.PASSWORD;
 
-const getCalDavClient = () => {
-  const credentials = new Credentials({ username: USERNAME, password: PASSWORD });
-  const xhr = new transport.Basic(credentials);
-  return new Client(xhr);
+const authHeader = {
+  Authorization: `Basic ${binaryToBase64(`${USERNAME}:${PASSWORD}`)}`,
 };
 
-export const getCalendar = async (loadObjects = true) => {
-  try {
-    const account = await getCalDavClient().createAccount({
-      server: CALDAV_URL,
-      accountType: 'caldav',
-      loadObjects,
-    });
-    return (
-      account.calendars.find(({ displayName }) => displayName === CALENDAR_NAME) || null
-    );
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-};
-
-export const createObj = async (startDate: string, title: string) => {
-  const calendar = await getCalendar(false);
-  if (!calendar) {
-    throw new Error('could not get calendar');
-  }
-
-  const filename = `${dayjs().format('YYYY-MM-DD')}_${Math.ceil(Math.random() * 999)}`;
-  await getCalDavClient().createCalendarObject(calendar, {
-    data: getCard(startDate, title),
-    filename,
-  });
-
-  const base64auth = binaryToBase64(`${USERNAME}:${PASSWORD}`);
-  const res = await fetch(`${CALDAV_URL}/calendars/${USERNAME}/default/${filename}`, {
-    headers: { Authorization: `Basic ${base64auth}` },
-  });
-
-  const text = await res.text();
-  return text
-    .split(/\s/)
-    .find((line) => line.startsWith('UID:'))
-    .replace('UID:', '');
-};
+const getUrl = (filename: string) =>
+  `${CALDAV_SERVER}${CALDAV_PATH}/calendars/${USERNAME}/${CALENDAR_KEY}/${filename}${
+    filename.endsWith('.ics') ? '' : '.ics'
+  }`;
 
 const getCard = (startDate: string, title: string) => `BEGIN:VCALENDAR
 PRODID:-//kimskal//EN
@@ -71,35 +35,69 @@ const formatDate = (date: Dayjs) =>
     .replace(/[-:.]/gi, '')
     .replace(/\d{0,3}Z/, 'Z');
 
-export const changeObj = async (id: string, title: string) => {
-  const calendar = await getCalendar(true);
-  if (!calendar) {
-    throw new Error('could not get calendar');
+const GET_CAL = `<c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+    <d:prop>
+        <d:getetag />
+        <c:calendar-data />
+    </d:prop>
+    <c:filter>
+        <c:comp-filter name="VCALENDAR">
+            <c:comp-filter name="VEVENT" />
+        </c:comp-filter>
+    </c:filter>
+</c:calendar-query>`;
+
+export const getAllEvents = async () => {
+  const path = `${CALDAV_PATH}/calendars/${USERNAME}/${CALENDAR_KEY}/`;
+  try {
+    const res = await fetch(`${CALDAV_SERVER}${path}`, {
+      method: 'REPORT',
+      headers: { ...authHeader, Depth: '1' },
+      body: GET_CAL,
+    });
+    const xml = await res.text();
+    return parseXml(xml).map((event) => ({
+      filename: event['d:href'][0].replace(path, ''),
+      calendarData: event['d:propstat'][0]['d:prop'][0]['cal:calendar-data'][0],
+    }));
+  } catch (e) {
+    console.error(e);
+    return null;
   }
-
-  const calendarObject = calendar.objects.find((obj) => obj.calendarData.includes(id));
-  if (!calendarObject) {
-    throw new Error('could not find calendarObject');
-  }
-
-  const calendarData = calendarObject.calendarData.replace(
-    /SUMMARY:.+/,
-    `SUMMARY:${title}`,
-  );
-
-  await getCalDavClient().updateCalendarObject({ ...calendarObject, calendarData });
 };
 
-export const deleteObj = async (id: string) => {
-  const calendar = await getCalendar(true);
-  if (!calendar) {
-    throw new Error('could not get calendar');
+export const createEvent = async (startDate: string, title: string) => {
+  const hash = Math.ceil(Math.random() * 999999);
+  const filename = `${dayjs().format('YYYY-MM-DD')}_${hash}`;
+  const url = getUrl(filename);
+  try {
+    await fetch(url, {
+      method: 'PUT', // apparently ¯\_(ツ)_/¯
+      headers: authHeader,
+      body: getCard(startDate, title),
+    });
+    // get newly created event in order to return its UID
+    const res = await fetch(url, { headers: authHeader });
+    const text = await res.text();
+    const id = text
+      .split(/\s/)
+      .find((line) => line.startsWith('UID:'))
+      .replace('UID:', '');
+    return { id, filename };
+  } catch (e) {
+    console.error(e);
+    return null;
   }
+};
 
-  const calendarObject = calendar.objects.find((obj) => obj.calendarData.includes(id));
-  if (!calendarObject) {
-    throw new Error('could not find calendarObject');
-  }
+export const changeEvent = async (filename: string, title: string) => {
+  const url = getUrl(filename);
+  const res = await fetch(url, { headers: authHeader });
+  const body = (await res.text()).replace(/SUMMARY:.+/, `SUMMARY:${title}`);
+  await fetch(url, { method: 'PUT', headers: authHeader, body });
+};
 
-  await getCalDavClient().deleteCalendarObject(calendarObject);
+export const deleteEvent = async (filename: string) => {
+  const url = getUrl(filename);
+  await fetch(url, { method: 'DELETE', headers: authHeader });
 };

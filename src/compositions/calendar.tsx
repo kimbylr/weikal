@@ -31,16 +31,17 @@ export const Calendar = (props: Props) => {
         headers: { passphrase },
         body: JSON.stringify({ startDate: dateStr, title }),
       });
-      const { id } = await res.json();
+      const { id, filename } = await res.json();
       console.log(id);
 
       setEvents((events) => [
         ...events,
         {
-          id: id || 'NO_ID',
+          id,
+          filename,
+          title,
           date: dateStr,
           end: date.add(1, 'day').format('YYYY-MM-DD'),
-          title,
         },
       ]);
     } finally {
@@ -69,7 +70,7 @@ export const Calendar = (props: Props) => {
     setLoading(true);
     try {
       if (title) {
-        const res = await fetch(`/api/event/${id}`, {
+        const res = await fetch(`/api/event/${event.filename}`, {
           method: 'PUT',
           headers: { passphrase },
           body: JSON.stringify({ id, title }),
@@ -79,7 +80,7 @@ export const Calendar = (props: Props) => {
         }
         setEvents((events) => events.map((e) => (e.id === id ? { ...e, title } : e)));
       } else {
-        const res = await fetch(`/api/event/${id}`, {
+        const res = await fetch(`/api/event/${event.filename}`, {
           method: 'DELETE',
           headers: { passphrase },
           body: JSON.stringify({ id }),
