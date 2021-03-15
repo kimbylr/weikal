@@ -32,7 +32,6 @@ export const Calendar = (props: Props) => {
         body: JSON.stringify({ startDate: dateStr, title }),
       });
       const { id, filename } = await res.json();
-      console.log(id);
 
       setEvents((events) => [
         ...events,
@@ -44,6 +43,8 @@ export const Calendar = (props: Props) => {
           end: date.add(1, 'day').format('YYYY-MM-DD'),
         },
       ]);
+    } catch {
+      alert('Sorry, hat nicht funktioniert. Seite neu laden und nochmals probieren!');
     } finally {
       setLoading(false);
     }
@@ -91,6 +92,7 @@ export const Calendar = (props: Props) => {
         setEvents((events) => events.filter((event) => event.id !== id));
       }
     } catch {
+      alert('Sorry, hat nicht funktioniert. Seite neu laden und nochmals probieren!');
     } finally {
       setLoading(false);
     }
