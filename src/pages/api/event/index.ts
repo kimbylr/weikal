@@ -3,7 +3,7 @@ import { createEvent } from '../../../services/cal-dav';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.headers.passphrase !== process.env.PASSPHRASE) {
-    res.status(401).send('unauthorized');
+    return res.status(401).send('unauthorized');
   }
 
   const { startDate, title } = JSON.parse(req.body);
@@ -18,5 +18,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
-  res.status(500).send('cannot handle request');
+  res.status(400).send('cannot handle request');
 };
