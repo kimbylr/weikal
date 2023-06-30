@@ -7,7 +7,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const { filename } = req.query;
-  const { title } = JSON.parse(req.body);
+  const { title } = (req.body && JSON.parse(req.body)) || {};
 
   if (typeof filename !== 'string') {
     return res.status(500).send('id must be a string');
