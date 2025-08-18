@@ -6,7 +6,7 @@ type Props = {
 export const Login = ({ setPassphrase }: Props) => {
   const [input, setInput] = useState('');
   const [nope, setNope] = useState(false);
-  const ref = useRef<HTMLInputElement | null>();
+  const ref = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     ref.current && ref.current.focus();
