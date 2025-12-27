@@ -1,4 +1,6 @@
-import('../.auth')
+const file = '../.auth'; // Ohai compiler, you don't know if this exists
+
+import(file)
   .then((auth) => {
     console.log(
       auth.users
