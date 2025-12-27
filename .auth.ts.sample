@@ -1,0 +1,9 @@
+import { User } from './src/types/global';
+
+export const users: User[] = [
+  {
+    passphrase: 'extremly secure',
+    calendarKey: 'default',
+    heading: 'schubidu',
+  },
+];

@@ -4,6 +4,7 @@ type Props = {
   key: string;
   initialValue?: string | null;
 };
+
 export const useLocalStorage = ({ key, initialValue = null }: Props) => {
   const [storedValue, setStoredValue] = useState(initialValue);
 

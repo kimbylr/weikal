@@ -5,3 +5,9 @@ export type Event = {
   filename: string;
   id: string;
 };
+
+export type User = {
+  passphrase: string;
+  calendarKey: string;
+  heading: string;
+};

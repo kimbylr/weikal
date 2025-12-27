@@ -1,24 +1,34 @@
-import React, { useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import FullCalendar from '@fullcalendar/react';
 import dayjs from 'dayjs';
-import { WEEKDAYS } from '../helpers/weekdays';
-import { Event } from '../types/global';
+import { useEffect, useState } from 'react';
 import { Spinner } from '../elements/spinner';
+import { changeEvent, createEvent, deleteEvent, getEvents } from '../services/calendar';
+import { Event } from '../types/global';
+import { WEEKDAYS } from '../util/weekdays';
 
 const FAILED_ALERT =
-  'Das hat leider nicht funktioniert :( Profitipp: Einfach nochmal versuchen.';
+  'Das hat leider nicht funktioniert :( Profitipp: Einfach nochmal versuchen. Sonst kim@rhyyy.ch fragen.';
 
 type Props = {
   events: Event[];
   passphrase: string;
 };
-export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
-  const [events, setEvents] = useState<Event[]>(initialEvents);
+
+export const Calendar = ({ passphrase }: Props) => {
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const createEvent = async (dateStr: string) => {
+  console.log(events);
+
+  useEffect(() => {
+    getEvents(passphrase)
+      .then((data) => setEvents(data))
+      .catch(() => alert('Einträge konnten nicht geladen werden. '));
+  }, []);
+
+  const addEvent = async (dateStr: string) => {
     const date = dayjs(dateStr);
     const weekday = WEEKDAYS[date.day()];
     const title = prompt(`Neuer Eintrag\n\n${weekday} ${date.format('D.M.')}`);
@@ -28,24 +38,16 @@ export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/event', {
-        method: 'POST',
-        headers: { passphrase },
-        body: JSON.stringify({ startDate: dateStr, title }),
-      });
-      const { id, filename } = await res.json();
-
+      const event = await createEvent({ passphrase, startDate: dateStr, title });
+      if (!event) {
+        throw new Error('No event');
+      }
       setEvents((events) => [
         ...events,
-        {
-          id,
-          filename,
-          title,
-          date: dateStr,
-          end: date.add(1, 'day').format('YYYY-MM-DD'),
-        },
+        { ...event, title, date: dateStr, end: date.add(1, 'day').format('YYYY-MM-DD') },
       ]);
-    } catch {
+    } catch (e) {
+      console.log(e);
       alert(FAILED_ALERT);
     } finally {
       setLoading(false);
@@ -73,22 +75,12 @@ export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
     setLoading(true);
     try {
       if (title) {
-        const res = await fetch(`/api/event/${event.filename}`, {
-          method: 'PUT',
-          headers: { passphrase },
-          body: JSON.stringify({ id, title }),
-        });
-        if (!res.ok) {
+        if (!(await changeEvent({ passphrase, filename: event.filename, title }))) {
           throw new Error('failed to change title');
         }
         setEvents((events) => events.map((e) => (e.id === id ? { ...e, title } : e)));
       } else {
-        const res = await fetch(`/api/event/${event.filename}`, {
-          method: 'DELETE',
-          headers: { passphrase },
-          body: JSON.stringify({ id }),
-        });
-        if (!res.ok) {
+        if (!(await deleteEvent({ passphrase, filename: event.filename }))) {
           throw new Error('failed to delete');
         }
         setEvents((events) => events.filter((event) => event.id !== id));
@@ -108,7 +100,7 @@ export const Calendar = ({ events: initialEvents, passphrase }: Props) => {
         firstDay={1}
         defaultAllDay
         events={events}
-        dateClick={({ dateStr }) => createEvent(dateStr)}
+        dateClick={({ dateStr }) => addEvent(dateStr)}
         eventClick={({ event }) => editEvent(event.id)}
         eventContent={({ event }) => <div className="event-container">{event.title}</div>}
       />

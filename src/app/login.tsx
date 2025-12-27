@@ -1,9 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import login from '../services/login';
 
 type Props = {
   setPassphrase: (value: string) => void;
+  setHeading: (value: string) => void;
 };
-export const Login = ({ setPassphrase }: Props) => {
+
+export const Login = ({ setPassphrase, setHeading }: Props) => {
   const [input, setInput] = useState('');
   const [nope, setNope] = useState(false);
   const ref = useRef<HTMLInputElement | null>(null);
@@ -18,12 +21,10 @@ export const Login = ({ setPassphrase }: Props) => {
       onSubmit={async (e) => {
         e.preventDefault();
         try {
-          const res = await fetch('/api/passphrase', {
-            method: 'POST',
-            body: JSON.stringify({ passphrase: input }),
-          });
-          if (res.ok) {
-            setPassphrase(input);
+          const user = await login(input);
+          if (user) {
+            setPassphrase(user.passphrase);
+            setHeading(user.heading);
           } else {
             setNope(true);
           }
@@ -40,6 +41,7 @@ export const Login = ({ setPassphrase }: Props) => {
           type="password"
           value={input}
           onChange={(e) => setInput(e.currentTarget.value)}
+          data-1p-ignore
         />
         <button>Hopp!</button>
       </div>

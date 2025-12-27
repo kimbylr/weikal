@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const Spinner = () => (
   <div className="loader loader--style2" title="1">
     <svg
