@@ -20,8 +20,6 @@ export const Calendar = ({ passphrase }: Props) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
 
-  console.log(events);
-
   useEffect(() => {
     getEvents(passphrase)
       .then((data) => setEvents(data))
@@ -102,7 +100,12 @@ export const Calendar = ({ passphrase }: Props) => {
         events={events}
         dateClick={({ dateStr }) => addEvent(dateStr)}
         eventClick={({ event }) => editEvent(event.id)}
-        eventContent={({ event }) => <div className="event-container">{event.title}</div>}
+        eventContent={({ event }) => (
+          <div className="event-container" style={{ maxHeight: 78, overflow: 'hidden' }}>
+            {event.title}
+          </div>
+        )}
+        height="auto"
       />
 
       {loading && (
